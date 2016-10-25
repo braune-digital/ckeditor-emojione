@@ -1,5 +1,5 @@
 CKEDITOR.dialog.add( 'emojioneDialog', function( editor ) {
-	var config = editor.config, columns = 8, i;
+	var config = editor.config, columns = 10, i;
 	var dialog;
 	var onClick = function( evt ) {
 		var target = evt.data.getTarget();
@@ -80,90 +80,91 @@ CKEDITOR.dialog.add( 'emojioneDialog', function( editor ) {
 		}
 	} );
 
-	// Build the HTML for the smiley images table.
-	var labelId = CKEDITOR.tools.getNextId() + '_smiley_emtions_label';
-	var html = [
-		'<div>' +
-		'<span id="' + labelId + '" class="cke_voice_label">Test</span>',
-		'<table role="listbox" aria-labelledby="' + labelId + '" style="width:100%;height:100%;border-collapse:separate;" cellspacing="2" cellpadding="2"',
-		CKEDITOR.env.ie && CKEDITOR.env.quirks ? ' style="position:absolute;"' : '',
-		'><tbody>'
-	];
+	var buildHtml = function(group) {
+		var labelId = CKEDITOR.tools.getNextId() + '_smiley_emtions_label';
+		var html = [
+			'<div>' +
+			'<span id="' + labelId + '" class="cke_voice_label">Test</span>',
+			'<table role="listbox" aria-labelledby="' + labelId + '" style="width:100%;height:100%;border-collapse:separate;" cellspacing="2" cellpadding="2"',
+			CKEDITOR.env.ie && CKEDITOR.env.quirks ? ' style="position:absolute;"' : '',
+			'><tbody>'
+		];
 
-	var list = {};
-	var i = 0;
-	emojione.imageType = 'svg'; // or svg
-	emojione.sprites = true;
-	emojione.imagePathSVGSprites = '/vendor/emojione/assets/sprites/emojione.sprites.svg';
+		var list = {};
+		var i = 0;
+		emojione.imageType = 'svg'; // or svg
+		emojione.sprites = true;
+		emojione.imagePathSVGSprites = '/vendor/emojione/assets/sprites/emojione.sprites.svg';
 
-	for (var shortcode in emojione.emojioneList) {
+		for (var shortcode in emojione.emojioneList) {
 
-		if (!emojione.emojioneList.hasOwnProperty(shortcode)) continue;
-		var obj = emojione.emojioneList[shortcode];
-		for (var prop in obj) {
-			if(!obj.hasOwnProperty(prop)) continue;
-			if (typeof config.emojis == 'undefined') {
-				list[shortcode] = obj;
-			} else {
-				if (config.emojis.indexOf(shortcode) != -1) {
+			if (!emojione.emojioneList.hasOwnProperty(shortcode)) continue;
+			var obj = emojione.emojioneList[shortcode];
+			if (!obj.isCanonical) continue;
+			for (var prop in obj) {
+				if(!obj.hasOwnProperty(prop)) continue;
+				if (config.emojis[group].indexOf(shortcode) != -1) {
 					list[shortcode] = obj;
 				}
 			}
-
 		}
 
-	}
+		for (var shortcode in list) {
 
-	for (var shortcode in list) {
+			if ( i % columns === 0 )
+				html.push( '<tr role="presentation">' );
 
-		if ( i % columns === 0 )
-			html.push( '<tr role="presentation">' );
+			if (!list.hasOwnProperty(shortcode)) continue;
 
-		if (!list.hasOwnProperty(shortcode)) continue;
+			var obj = list[shortcode];
+			for (var prop in obj) {
+				if(!obj.hasOwnProperty(prop)) continue;
+			}
 
-		var obj = list[shortcode];
-		for (var prop in obj) {
-			if(!obj.hasOwnProperty(prop)) continue;
+			html.push(
+				'<td class="cke_centered" style="vertical-align: middle;" role="presentation">' +
+				'<a data-unicode="' + obj.unicode[0] + '" data-shortcode="' + shortcode + '" href="javascript:void(0)" role="option"', ' aria-posinset="' + ( i + 1 ) + '"', ' aria-setsize=""', ' aria-labelledby=""',
+				' class="cke_hand" tabindex="-1" onkeydown="CKEDITOR.tools.callFunction( ', onKeydown, ', event, this );">',
+				emojione.shortnameToUnicode(shortcode) +
+				'</a>', '</td>'
+			);
+
+			if ( i % columns == columns - 1 )
+				html.push( '</tr>' );
+			i++;
 		}
 
-		html.push(
-			'<td class="cke_centered" style="vertical-align: middle;width: 20px;" role="presentation">' +
-			'<a data-unicode="' + obj.unicode[0] + '" data-shortcode="' + shortcode + '" href="javascript:void(0)" role="option"', ' aria-posinset="' + ( i + 1 ) + '"', ' aria-setsize=""', ' aria-labelledby=""',
-			' class="cke_smile cke_hand" tabindex="-1" onkeydown="CKEDITOR.tools.callFunction( ', onKeydown, ', event, this );">',
-			emojione.shortnameToUnicode(shortcode) +
-			'</a>', '</td>'
-		);
 
-		if ( i % columns == columns - 1 )
+		if ( i < columns - 1 ) {
+			for ( ; i < columns - 1; i++ )
+				html.push( '<td></td>' );
 			html.push( '</tr>' );
-		i++;
-	}
+		}
+
+		html.push( '</tbody></table></div>' );
+		return html;
+	};
 
 
-	if ( i < columns - 1 ) {
-		for ( ; i < columns - 1; i++ )
-			html.push( '<td></td>' );
-		html.push( '</tr>' );
-	}
 
-	html.push( '</tbody></table></div>' );
-
-	var smileySelector = {
-		type: 'html',
-		id: 'emojiSelector',
-		html: html.join( '' ),
-		onLoad: function( event ) {
-			dialog = event.sender;
-		},
-		focus: function() {
-			var self = this;
-			setTimeout( function() {
-				var firstSmile = self.getElement().getElementsByTag( 'a' ).getItem( 0 );
-				firstSmile.focus();
-			}, 0 );
-		},
-		onClick: onClick,
-		style: 'width: 100%; border-collapse: separate;'
+	var emojis = function(group) {
+		return {
+			type: 'html',
+			id: 'emojiSelector',
+			html: buildHtml(group).join( '' ),
+			onLoad: function( event ) {
+				dialog = event.sender;
+			},
+			focus: function() {
+				var self = this;
+				setTimeout( function() {
+					var firstSmile = self.getElement().getElementsByTag( 'a' ).getItem( 0 );
+					firstSmile.focus();
+				}, 0 );
+			},
+			onClick: onClick,
+			style: 'width: 100%; border-collapse: separate;'
+		}
 	};
 
 	return {
@@ -172,10 +173,34 @@ CKEDITOR.dialog.add( 'emojioneDialog', function( editor ) {
 		minHeight: 200,
 		contents: [
 			{
-				id: 'tab-basic',
-				label: 'Basic Settings',
+				id: 'tab-people',
+				label: 'People',
 				elements: [
-					smileySelector
+					emojis('people')
+				]
+			}, {
+				id: 'tab-nature',
+				label: 'Nature',
+				elements: [
+					emojis('nature')
+				]
+			}, {
+				id: 'tab-objects',
+				label: 'Objects',
+				elements: [
+					emojis('objects')
+				]
+			}, {
+				id: 'tab-places',
+				label: 'Places',
+				elements: [
+					emojis('places')
+				]
+			}, {
+				id: 'tab-symbols',
+				label: 'Symbols',
+				elements: [
+					emojis('symbols')
 				]
 			}
 		],
