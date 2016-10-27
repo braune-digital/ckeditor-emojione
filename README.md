@@ -3,6 +3,7 @@
 This plugin integrates the emojione library into the CKEditor. The plugin allows you to add all known emojis into your content in unicode format.
 
 Plugin on the [CKEditor website](http://ckeditor.com/addon/emojione)
+
 Try our [Demo](http://ckeditor-emojione-demo.braune-digital.com)
 
 You can install the dependencies and the plugin with bower:
