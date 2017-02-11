@@ -3,8 +3,11 @@ CKEDITOR.dialog.add( 'emojioneDialog', function( editor ) {
 	var dialog;
 	var onClick = function( evt ) {
 		var target = evt.data.getTarget();
-		editor.insertText(emojione.convert(target.getAttribute('data-unicode')));
-		dialog.hide();
+		var unicode = target.getAttribute('data-unicode');
+		if (unicode) {
+			editor.insertText(emojione.convert(target.getAttribute('data-unicode')));
+			dialog.hide();
+		}
 		evt.data.preventDefault();
 	};
 
@@ -169,7 +172,7 @@ CKEDITOR.dialog.add( 'emojioneDialog', function( editor ) {
 
 	return {
 		title: 'Emojis',
-		minWidth: 400,
+		minWidth: 550,
 		minHeight: 200,
 		contents: [
 			{
