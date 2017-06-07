@@ -86,7 +86,7 @@ CKEDITOR.dialog.add( 'emojioneDialog', function( editor ) {
 	var buildHtml = function(group) {
 		var labelId = CKEDITOR.tools.getNextId() + '_smiley_emtions_label';
 		var html = [
-			'<div>' +
+			'<div style="max-height:300px;overflow-y:scroll;">' +
 			'<span id="' + labelId + '" class="cke_voice_label">Test</span>',
 			'<table role="listbox" aria-labelledby="' + labelId + '" style="width:100%;height:100%;border-collapse:separate;" cellspacing="2" cellpadding="2"',
 			CKEDITOR.env.ie && CKEDITOR.env.quirks ? ' style="position:absolute;"' : '',
@@ -106,7 +106,7 @@ CKEDITOR.dialog.add( 'emojioneDialog', function( editor ) {
 			if (!obj.isCanonical) continue;
 			for (var prop in obj) {
 				if(!obj.hasOwnProperty(prop)) continue;
-				if (config.emojis[group].indexOf(shortcode) != -1) {
+				if (config.emojione.emojis[group].indexOf(shortcode) != -1) {
 					list[shortcode] = obj;
 				}
 			}
@@ -126,7 +126,7 @@ CKEDITOR.dialog.add( 'emojioneDialog', function( editor ) {
 
 			html.push(
 				'<td class="cke_centered" style="vertical-align: middle;" role="presentation">' +
-				'<a data-unicode="' + obj.unicode[0] + '" data-shortcode="' + shortcode + '" href="javascript:void(0)" role="option"', ' aria-posinset="' + ( i + 1 ) + '"', ' aria-setsize=""', ' aria-labelledby=""',
+				'<a style="font-size: 25px;" data-unicode="' + obj.unicode[0] + '" data-shortcode="' + shortcode + '" href="javascript:void(0)" role="option"', ' aria-posinset="' + ( i + 1 ) + '"', ' aria-setsize=""', ' aria-labelledby=""',
 				' class="cke_hand" tabindex="-1" onkeydown="CKEDITOR.tools.callFunction( ', onKeydown, ', event, this );">',
 				emojione.shortnameToUnicode(shortcode) +
 				'</a>', '</td>'
@@ -177,31 +177,31 @@ CKEDITOR.dialog.add( 'emojioneDialog', function( editor ) {
 		contents: [
 			{
 				id: 'tab-people',
-				label: 'People',
+				label: editor.config.emojione.tabs.people,
 				elements: [
 					emojis('people')
 				]
 			}, {
 				id: 'tab-nature',
-				label: 'Nature',
+				label: editor.config.emojione.tabs.nature,
 				elements: [
 					emojis('nature')
 				]
 			}, {
 				id: 'tab-objects',
-				label: 'Objects',
+				label: editor.config.emojione.tabs.objects,
 				elements: [
 					emojis('objects')
 				]
 			}, {
 				id: 'tab-places',
-				label: 'Places',
+				label: editor.config.emojione.tabs.places,
 				elements: [
 					emojis('places')
 				]
 			}, {
 				id: 'tab-symbols',
-				label: 'Symbols',
+				label: editor.config.emojione.tabs.symbols,
 				elements: [
 					emojis('symbols')
 				]
